@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Vim backup files
+.*~
+
+# CMake build directory
+build/
