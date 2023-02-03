@@ -34,7 +34,7 @@ class ElementwiseBinaryOp: public BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_
     private:
         LHS m_lhs;
         RHS m_rhs;
-        const BINARY_OP m_op;
+        BINARY_OP m_op;
 
         constexpr explicit ElementwiseBinaryOp() noexcept = default;
 };

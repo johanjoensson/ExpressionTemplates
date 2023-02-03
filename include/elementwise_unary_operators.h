@@ -29,7 +29,7 @@ class ElementwiseUnaryOp: public BaseExpr<ElementwiseUnaryOp<RHS, UNARY_OP>>{
         constexpr ElementwiseUnaryOp& operator=(ElementwiseUnaryOp&&) noexcept = default;
     private:
         RHS m_rhs;
-        const UNARY_OP m_op;
+        UNARY_OP m_op;
 
         constexpr explicit ElementwiseUnaryOp() noexcept = default;
 };
