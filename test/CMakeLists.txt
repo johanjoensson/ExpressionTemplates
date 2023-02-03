@@ -12,9 +12,10 @@ target_link_libraries(expr-template-test ${GTEST_LIBRARIES} pthread
     expr-template-lib)
 GTEST_ADD_TESTS(expr-template-test "" ${TEST_FILES})
 
+find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 add_executable(perf-check perf_test.cpp)
-target_link_libraries(perf-check PUBLIC expr-template-lib Eigen3::Eigen)
+target_link_libraries(perf-check PUBLIC expr-template-lib Eigen3::Eigen Boost::boost)
 
 add_executable(clang-crash clang_crash.cpp)
 target_link_libraries(clang-crash expr-template-lib)
