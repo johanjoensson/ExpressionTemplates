@@ -3,6 +3,7 @@
 
 #include<base_expression.h>
 #include <functional>
+#include <iostream>
 
 namespace expr
 {
@@ -16,7 +17,7 @@ class ElementwiseBinaryOp: public BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_
         using value_type = decltype(std::declval<BINARY_OP>()(std::declval<typename LHS_noref::value_type>(), std::declval<typename RHS_noref::value_type>()));
 
         constexpr explicit ElementwiseBinaryOp(LHS&& lhs, RHS&& rhs, BINARY_OP&& op) noexcept
-            : Base(), m_lhs(std::forward<LHS>(lhs)), m_rhs(std::forward<RHS>(rhs)), m_op(std::move(op))
+         : Base(), m_lhs(std::forward<LHS>(lhs)), m_rhs(std::forward<RHS>(rhs)), m_op(std::forward<BINARY_OP>(op))
         {}
 
         ~ElementwiseBinaryOp() noexcept = default;
@@ -24,7 +25,10 @@ class ElementwiseBinaryOp: public BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_
         constexpr auto extents() const noexcept {return m_rhs.extents();};
         constexpr auto extent(std::size_t i) const noexcept {return m_rhs.extent(i);};
 
-        constexpr inline auto operator[](auto&&  ... indices) const noexcept {return m_op(m_lhs[indices...], m_rhs[indices...]);}
+#ifdef CLANGBUG
+        constexpr inline auto operator()(auto&&  ... indices) const {return m_op(m_lhs(indices...), m_rhs(indices...));}
+#endif
+        constexpr inline auto operator[](auto&&  ... indices) const {return m_op(m_lhs[indices...], m_rhs[indices...]);}
 
         constexpr explicit ElementwiseBinaryOp(const ElementwiseBinaryOp&) noexcept = default;
         constexpr explicit ElementwiseBinaryOp(ElementwiseBinaryOp&&) noexcept = default;
@@ -32,56 +36,42 @@ class ElementwiseBinaryOp: public BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_
         constexpr ElementwiseBinaryOp& operator=(const ElementwiseBinaryOp&) noexcept = default;
         constexpr ElementwiseBinaryOp& operator=(ElementwiseBinaryOp&&) noexcept = default;
     private:
-        LHS m_lhs;
-        RHS m_rhs;
+        std::remove_cv_t<LHS> m_lhs;
+        std::remove_cv_t<RHS> m_rhs;
         BINARY_OP m_op;
 
         constexpr explicit ElementwiseBinaryOp() noexcept = default;
 };
 
 
-// template<expression LHS, expression RHS>
-// constexpr inline auto operator+(const LHS& lhs, const RHS& rhs) noexcept
-// {
-//     return ElementwiseBinaryOp<LHS, RHS, std::plus<>>(lhs, rhs, std::plus<>());
-// }
+template<expression LHS, expression RHS, typename BinaryOp>
+constexpr inline auto zip(LHS&& lhs, RHS&& rhs, BinaryOp&& op) noexcept
+{
+    return ElementwiseBinaryOp<LHS, RHS, BinaryOp>(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::forward<BinaryOp>(op));
+}
+
 template<expression LHS, expression RHS>
 constexpr inline auto operator+(LHS&& lhs, RHS&& rhs) noexcept
 {
-     return ElementwiseBinaryOp<LHS, RHS, std::plus<>>(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::plus<>());
+     return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::plus<>());
 }
 
-// template<expression LHS, expression RHS>
-// constexpr inline auto operator-(const LHS& lhs, const RHS& rhs) noexcept
-// {
-//     return ElementwiseBinaryOp<LHS, RHS, std::minus<>>(lhs, rhs, std::minus<>());
-// }
 template<expression LHS, expression RHS>
 constexpr inline auto operator-(LHS&& lhs, RHS&& rhs) noexcept
 {
-    return ElementwiseBinaryOp<LHS, RHS, std::minus<>>(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::minus<>());
+    return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::minus<>());
 }
 
-// template<expression LHS, expression RHS>
-// constexpr inline auto operator*(const LHS& lhs, const RHS& rhs) noexcept
-// {
-//     return ElementwiseBinaryOp<LHS, RHS, std::multiplies<>>(lhs, rhs, std::multiplies<>());
-// }
 template<expression LHS, expression RHS>
 constexpr inline auto operator*(LHS&& lhs, RHS&& rhs) noexcept
 {
-    return ElementwiseBinaryOp<LHS, RHS, std::multiplies<>>(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::multiplies<>());
+    return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::multiplies<>());
 }
 
-// template<expression LHS, expression RHS>
-// constexpr inline auto operator/(const LHS& lhs, const RHS& rhs) noexcept
-// {
-//     return ElementwiseBinaryOp<LHS, RHS, std::divides<>>(lhs, rhs, std::divides<>());
-// }
 template<expression LHS, expression RHS>
 constexpr inline auto operator/(LHS&& lhs, RHS&& rhs) noexcept
 {
-    return ElementwiseBinaryOp<LHS, RHS, std::divides<>>(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::divides<>());
+    return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::divides<>());
 }
 }; //expr
 

@@ -295,3 +295,21 @@ TEST(Matrix, TestAddMul)
         }
     }
 }
+
+TEST(Matrix, Cast)
+{
+    auto caster = [](const int val){return static_cast<double>(val);};
+    Matrix<int, 2, 2> m1;
+    m1[0, 0] = 1;
+    m1[0, 1] = 2;
+    m1[1, 0] = 3;
+    m1[1, 1] = 4;
+    Matrix<double, 2, 2> m2 = expr::map(m1, caster);
+    for(size_t i = 0; i < m2.rows; i++){
+        for(size_t j = 0; j < m2.cols; j++){
+            auto val1 = m1[i, j];
+            auto val2 = m2[i, j];
+            ASSERT_DOUBLE_EQ(static_cast<double>(val1), val2);
+        }
+    }
+}

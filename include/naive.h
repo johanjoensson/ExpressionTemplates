@@ -2,12 +2,15 @@
 #define NAIVE_H
 
 #include <vector>
+#include <functional>
 #include <experimental/mdspan>
-#include <iostream>
 
 namespace stdex = std::experimental;
 
 namespace naive{
+
+    template<class IndexType, std::size_t ... Extents, typename Operator>
+    constexpr void for_each_index(stdex::extents<IndexType, Extents...>, Operator&&) noexcept;
 
     template<typename T, typename Extents>
     class MDArray{
@@ -22,10 +25,12 @@ namespace naive{
             m_data.shrink_to_fit();
         }
 
-        template<typename... Indices>
-        T& operator[](Indices... indices){return m_mdspan[indices...];}
-        template<typename... Indices>
-        const T& operator[](Indices... indices) const {return m_mdspan[indices...];}
+#ifdef CLANGBUG
+        T& operator()(auto&&... indices){return m_mdspan(indices...);}
+        const T& operator()(auto&&... indices) const {return m_mdspan(indices...);}
+#endif
+        T& operator[](auto&&... indices){return m_mdspan[indices...];}
+        const T& operator[](auto&&... indices) const {return m_mdspan[indices...];}
 
         Extents extents() const {return m_mdspan.extents();}
         auto extent(size_t i) const {return m_mdspan.extent(i);}
@@ -36,28 +41,63 @@ namespace naive{
         stdex::mdspan<T, Extents> m_mdspan;
     };
 
+    template<typename T, typename Extents, typename BinaryOp>
+    MDArray<T, Extents> zip(const MDArray<T, Extents>& lhs, const MDArray<T, Extents>& rhs, BinaryOp&& op)
+    {
+        MDArray<T, Extents> res(lhs.extents());
+        auto operate = [&]<typename... Indices>(Indices... indices)
+        {
+#ifdef CLANGBUG
+            res(indices...) = op(lhs(indices...), rhs(indices...));
+#else
+            res[indices...] = op(lhs[indices...], rhs[indices...]);
+#endif
+        };
+        for_each_index(res.extents(), operate);
+        return res;
+    }
+
     template<typename T, typename Extents>
     MDArray<T, Extents> operator+(const MDArray<T, Extents>& lhs, const MDArray<T, Extents>& rhs)
     {
-        MDArray<T, Extents> res(lhs.extents());
-        auto add = [&]<typename... Indices>(Indices... indices)
-        {
-            res[indices...] = lhs[indices...] + rhs[indices...];
-        };
-        forEachIndex(res.extents(), add);
-        return res;
+        return zip(lhs, rhs, std::plus<>());
+    }
+
+    template<typename T, typename Extents>
+    MDArray<T, Extents> operator-(const MDArray<T, Extents>& lhs, const MDArray<T, Extents>& rhs)
+    {
+        return zip(lhs, rhs, std::minus<>());
     }
 
     template<typename T, typename Extents>
     MDArray<T, Extents> operator*(const MDArray<T, Extents>& lhs, const MDArray<T, Extents>& rhs)
     {
-        MDArray<T, Extents> res(lhs.extents());
-        auto mult = [&]<typename... Indices>(Indices... indices)
+        return zip(lhs, rhs, std::multiplies<>());
+    }
+
+    template<typename T, typename Extents>
+    MDArray<T, Extents> operator/(const MDArray<T, Extents>& lhs, const MDArray<T, Extents>& rhs)
+    {
+        return zip(lhs, rhs, std::divides<>());
+    }
+
+    template<typename IndexType, std::size_t ... Extents, typename Operator,
+    std::size_t Exti, std::size_t... Exts, typename... Indices>
+        constexpr inline void for_each_index(const stdex::extents<IndexType, Extents...>& ext, Operator&& op,
+                std::index_sequence<Exti, Exts...>, Indices... indices) noexcept
         {
-            res[indices...] = lhs[indices...] * rhs[indices...];
-        };
-        forEachIndex(res.extents(), mult);
-        return res;
+            for(IndexType i = 0; i < ext.extent(Exti); i++)
+                if constexpr(sizeof...(Exts) > 0)
+                    for_each_index(ext, std::forward<Operator>(op), std::index_sequence<Exts...>{}, indices..., i);
+                else
+                    std::forward<Operator>(op)(indices..., i);
+        }
+
+    template<class IndexType, std::size_t ... Extents, typename Operator>
+    constexpr inline void for_each_index(stdex::extents<IndexType, Extents...> ext, Operator&& op) noexcept
+    {
+        // for column-major, you could reverse the index_sequence
+        for_each_index(ext, std::forward<Operator>(op), std::make_index_sequence<sizeof...(Extents)>{});
     }
 
 }; // namespace naive

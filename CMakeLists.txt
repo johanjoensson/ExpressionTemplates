@@ -11,6 +11,16 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(MDSPAN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/mdspan/include/)
 
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CLANGBUG On)
+    add_compile_options(-DCLANG_COMPILER)
+endif()
+
+if(DEFINED CLANGBUG)
+    add_compile_options(-DCLANGBUG -DMDSPAN_USE_PAREN_OPERATOR)
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipo_supported OUTPUT error)
@@ -19,8 +29,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
             TRUE)
     endif()
 endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-Werror -Wall -Wextra -pedantic -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion -Wmisleading-indentation -Wnull-dereference -Wdouble-promotion -Wformat=2 -Weffc++ -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast)
+add_compile_options(-Werror -Wall -Wextra -pedantic -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion -Wmisleading-indentation -Wnull-dereference -Wdouble-promotion -Wformat=2 -Weffc++)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU") 
+    add_compile_options(-Wduplicated-cond -Wduplicated-branches -Wlogical-op
+        -Wuseless-cast)
 endif()
 
 message( STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} -------------")

@@ -11,8 +11,8 @@ using expr::BaseExpr;
 using expr::expression;
 #include <iostream>
 
-template<class IndexType, std::size_t ... Extents, typename Operator>
-constexpr void for_each_index(stdex::extents<IndexType, Extents...>, Operator&&) noexcept;
+template<class IndexType, std::size_t ... Extents, typename Func>
+constexpr void forEachIndex(stdex::extents<IndexType, Extents...>, Func&&) noexcept;
 
 template<typename IndexType, size_t... Extents, std::size_t Exti, std::size_t... Exts>
 constexpr size_t ext_size(const stdex::extents<IndexType, Extents...>& exts, std::index_sequence<Exti, Exts...>) noexcept
@@ -30,56 +30,50 @@ constexpr size_t ext_size(const stdex::extents<IndexType, Extents...>& exts) noe
     return ext_size(exts, std::make_index_sequence<sizeof...(Extents)>{});
 }
 
-template<typename T, typename Extents>
-class MDArray;
 
 template<typename T, typename IndexType, size_t... Extents>
-class MDArray<T, stdex::extents<IndexType, Extents...>>: public BaseExpr<MDArray<T, stdex::extents<IndexType, Extents...>>>{
+class ExprSpan: public BaseExpr<ExprSpan<T, IndexType, Extents...>>{
     public:
         using value_type = T;
-        constexpr explicit MDArray(const stdex::extents<IndexType, Extents...>& exts) noexcept 
-            : m_data(ext_size(exts)), m_mdspan(m_data.data(), exts)
+        constexpr explicit ExprSpan(stdex::mdspan<T, stdex::extents<IndexType, Extents...>>&& mds) noexcept 
+            : m_mdspan(std::move(mds))
+        {}
+        constexpr explicit ExprSpan(const stdex::mdspan<T, stdex::extents<IndexType, Extents...>>& mds) noexcept 
+            : m_mdspan(mds)
         {}
 
-        constexpr explicit MDArray(const stdex::extents<IndexType, Extents...>& exts, T val) noexcept 
-            : m_data(ext_size(exts), val), m_mdspan(m_data.data(), exts)
-        {}
-
-#ifdef CLANGBUG
-        constexpr inline T& operator()(auto&&... indices) {return m_mdspan(indices...);}
-        constexpr inline const T& operator()(auto&&... indices) const {return m_mdspan(indices...);}
-#endif
-        constexpr inline T& operator[](auto&&... indices) {return m_mdspan[indices...];}
-        constexpr inline const T& operator[](auto&&... indices) const {return m_mdspan[indices...];}
+        constexpr inline T& operator()(auto&&... indices) noexcept {return m_mdspan(indices...);}
+        constexpr inline const T& operator()(auto&&... indices) const noexcept {return m_mdspan(indices...);}
+        constexpr inline T& operator[](auto&&... indices) noexcept {return m_mdspan[indices...];}
+        constexpr inline const T& operator[](auto&&... indices) const noexcept {return m_mdspan[indices...];}
 
         constexpr inline auto extents() const noexcept {return m_mdspan.extents();}
         constexpr inline auto extent(size_t i) const noexcept {return m_mdspan.extent(i);}
         constexpr operator stdex::mdspan<T, stdex::extents<IndexType, Extents...>>() noexcept {return m_mdspan;}
 
         template<expression Expr>
-        constexpr MDArray(Expr&& expr) noexcept
-         : MDArray(expr.extents())
+        constexpr ExprSpan& operator=(Expr&& expr) noexcept
         {
-            auto assigner =  [&](auto&&... indices) noexcept{
+            auto assigner =  [&]<typename ...Indices>(Indices&&... indices) noexcept{
 #ifdef CLANGBUG
-                (*this)(indices...) = expr(indices...);
+                (*this)(indices...) = std::forward<Expr>(expr)(indices...);
 #else
-                (*this)[indices...] = expr[indices...];
+                (*this)[indices...] = std::forward<Expr>(expr)[indices...];
 #endif
             };
-            for_each_index(this->extents(), assigner);
+            forEachIndex(this->extents(), assigner);
+            return *this;
         }
 
-        inline explicit MDArray() noexcept = default;
-        inline explicit MDArray(const MDArray&) noexcept = default;
-        inline explicit MDArray(MDArray&&) noexcept = default;
-        inline ~MDArray() noexcept = default;
+        inline explicit ExprSpan() noexcept = default;
+        inline explicit ExprSpan(const ExprSpan&) noexcept = default;
+        inline explicit ExprSpan(ExprSpan&&) noexcept = default;
+        inline ~ExprSpan() noexcept = default;
 
-        inline MDArray& operator=(const MDArray&) noexcept = default;
-        inline MDArray& operator=(MDArray&&) noexcept = default;
+        inline ExprSpan& operator=(const ExprSpan&) noexcept = default;
+        inline ExprSpan& operator=(ExprSpan&&) noexcept = default;
     private:
-        std::vector<T> m_data;
-        stdex::mdspan<T, stdex::extents<IndexType, Extents...>> m_mdspan;
+        stdex::mdspan<T, stdex::mdspan<IndexType, Extents>> m_mdspan;
 };
 
 template<typename IndexType, std::size_t ... Extents, typename Operator,
@@ -97,6 +91,7 @@ constexpr inline void for_each_index(const stdex::extents<IndexType, Extents...>
 template<class IndexType, std::size_t ... Extents, typename Operator>
 constexpr inline void for_each_index(stdex::extents<IndexType, Extents...> ext, Operator&& op) noexcept
 {
+    // for column-major, you could reverse the index_sequence
     for_each_index(ext, std::forward<Operator>(op), std::make_index_sequence<sizeof...(Extents)>{});
 }
 

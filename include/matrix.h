@@ -31,7 +31,11 @@ class Matrix : public BaseExpr<Matrix<T, ROWS, COLS>>{
             auto extents = expr.extents();
             for(std::size_t i = 0; i < extents.extent(0); i++){
                 for(std::size_t j = 0; j < extents.extent(1); j++){
+#ifdef CLANGBUG
+                    (*this)(i, j) = expr(i, j);
+#else
                     (*this)[i, j] = expr[i, j];
+#endif
                 }
             }
         }
@@ -39,8 +43,12 @@ class Matrix : public BaseExpr<Matrix<T, ROWS, COLS>>{
         static constexpr std::size_t rows = ROWS;
         static constexpr std::size_t cols =  COLS;
 
-        auto extents() const {return stdex::extents<size_t, 2, 2>();}
+        auto extents() const noexcept {return stdex::extents<size_t, 2, 2>();}
 
+#ifdef CLANGDEBUG
+        T& operator()(std::size_t i, std::size_t j){return m_values[i*COLS + j];}
+        T operator()(std::size_t i, std::size_t j) const {return m_values[i*COLS + j];}
+#endif
         T& operator[](std::size_t i, std::size_t j){return m_values[i*COLS + j];}
         T operator[](std::size_t i, std::size_t j) const {return m_values[i*COLS + j];}
 

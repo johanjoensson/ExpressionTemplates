@@ -13,8 +13,8 @@ class BaseExpr;
 // All Expressions must derive from BaseExpr
 template<typename Expr>
 concept derived_from_baseexpr = 
-std::derived_from<std::remove_reference_t<Expr>,
-                  BaseExpr<std::remove_reference_t<Expr>>
+std::derived_from<std::remove_cv_t<std::remove_reference_t<Expr>>,
+                  BaseExpr<std::remove_cv_t<std::remove_reference_t<Expr>>>
                  >;
 
 // All Expressions must implement a member function extents()
@@ -46,12 +46,14 @@ class BaseExpr
 {
     public:
 
-        const Expr& self() const {return static_cast<const Expr&>(*this);}
-        Expr& self() {return static_cast<Expr&>(*this);}
+        const Expr& self() const noexcept {return static_cast<const Expr&>(*this);}
+        Expr& self() noexcept {return static_cast<Expr&>(*this);}
 
-        constexpr inline auto extents() const {return self().extents();}
-        constexpr inline auto extent(std::size_t i) const {return self().extent(i);}
-
+        constexpr inline auto extents() const noexcept {return self().extents();}
+        constexpr inline auto extent(std::size_t i) const noexcept {return self().extent(i);}
+#ifdef CLANGBUG
+        constexpr inline auto operator()(auto&&... indices) const {return self()(indices...);}
+#endif
         constexpr inline auto operator[](auto&&... indices) const {return self()[indices...];}
     protected:
         constexpr explicit BaseExpr() noexcept = default;
