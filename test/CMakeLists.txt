@@ -7,10 +7,14 @@ set(TEST_FILES
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-add_executable(expr-template-test ${TEST_FILES})
-target_link_libraries(expr-template-test ${GTEST_LIBRARIES} pthread
+add_executable(ExpressionTemplate-test ${TEST_FILES})
+target_link_libraries(ExpressionTemplate-test ${GTEST_LIBRARIES} pthread
         ExpressionTemplate)
-GTEST_ADD_TESTS(expr-template-test "" ${TEST_FILES})
+GTEST_ADD_TESTS(ExpressionTemplate-test "" ${TEST_FILES})
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(ExpressionTemplate-test PRIVATE -fsanitize=address)
+        target_link_options(ExpressionTemplate-test PRIVATE -fsanitize=address)
+endif()
 
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
