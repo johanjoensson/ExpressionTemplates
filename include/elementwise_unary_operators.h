@@ -47,45 +47,29 @@ constexpr inline auto map(Expr&& expr, UnaryOp&& op) noexcept
 template<expression RHS>
 constexpr inline auto operator*(const typename std::remove_reference_t<RHS>::value_type scalar, RHS&& rhs) noexcept
 {
-    return map(std::forward<RHS>(rhs), ElementScale<typename std::remove_reference_t<RHS>::value_type>(scalar));
+    auto multiplier = [scalar](auto elem){return elem*scalar;};
+    return map(std::forward<RHS>(rhs), std::move(multiplier));
 }
 
 template<expression LHS>
 constexpr inline auto operator*(LHS&& lhs, const typename std::remove_reference_t<LHS>::value_type scalar) noexcept
 {
-    return map(std::forward<LHS>(lhs), ElementScale(scalar));
+    auto multiplier = [scalar](auto elem){return elem*scalar;};
+    return map(std::forward<LHS>(lhs), std::move(multiplier));
 }
-
-template<typename T>
-struct ElementScaleRecipr
-{
-    constexpr ElementScaleRecipr() = default;
-    constexpr ElementScaleRecipr(const T val) : m_val(val) {}
-    constexpr inline T operator()(const T a) const noexcept {return m_val/a;}
-    private:
-    const T m_val;
-};
 
 template<expression RHS>
 constexpr inline auto operator/(const typename std::remove_reference_t<RHS>::value_type scalar, RHS&& rhs) noexcept
 {
-    return map(std::forward<RHS>(rhs), ElementScaleRecipr(scalar));
+    auto div = [scalar](auto elem){return scalar/elem;};
+    return map(std::forward<RHS>(rhs), std::move(div));
 }
-
-template<typename T>
-struct ElementScaleDiv
-{
-    constexpr ElementScaleDiv() = default;
-    constexpr ElementScaleDiv(const T& val) : m_val(val) {}
-    constexpr inline T operator()(const T& a) const noexcept {return a/m_val;}
-    private:
-    const T m_val;
-};
 
 template<expression LHS>
 constexpr inline auto operator/(LHS&& lhs, const typename std::remove_reference_t<LHS>::value_type& scalar) noexcept
 {
-    return map(std::forward<LHS>(lhs), ElementScaleDiv<typename std::remove_reference_t<LHS>::value_type>(scalar));
+    auto div = [scalar](auto elem){return scalar*(1/elem);};
+    return map(std::forward<LHS>(lhs), std::move(div));
 }
 
 template<expression RHS>
