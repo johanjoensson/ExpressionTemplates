@@ -49,17 +49,18 @@ class BaseExpr
         const Expr& self() const noexcept {return static_cast<const Expr&>(*this);}
         Expr& self() noexcept {return static_cast<Expr&>(*this);}
 
-        constexpr inline auto extents() const noexcept {return self().extents();}
-        constexpr inline auto extent(std::size_t i) const noexcept {return self().extent(i);}
+        constexpr auto extents() const noexcept {return self().extents();}
+        constexpr auto extent(std::size_t i) const noexcept {return self().extent(i);}
 #ifdef CLANGBUG
-        constexpr inline auto operator()(auto&&... indices) const {return self()(indices...);}
+        constexpr auto operator()(auto&&... indices) const {return self()(indices...);}
 #endif
-        constexpr inline auto operator[](auto&&... indices) const {return self()[indices...];}
+        constexpr auto operator[](auto&&... indices) const {return self()[indices...];}
     protected:
         constexpr explicit BaseExpr() noexcept = default;
         constexpr explicit BaseExpr(const BaseExpr&) noexcept = default;
         constexpr explicit BaseExpr(BaseExpr&&) noexcept = default;
-        virtual ~BaseExpr() noexcept = default;
+        ~BaseExpr() noexcept = default;
+        // virtual ~BaseExpr() noexcept = default;
 
         constexpr BaseExpr& operator=(const BaseExpr&) noexcept = default;
         constexpr BaseExpr& operator=(BaseExpr&&) noexcept = default;

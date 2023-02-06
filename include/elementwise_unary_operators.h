@@ -68,7 +68,7 @@ constexpr inline auto operator/(const typename std::remove_reference_t<RHS>::val
 template<expression LHS>
 constexpr inline auto operator/(LHS&& lhs, const typename std::remove_reference_t<LHS>::value_type& scalar) noexcept
 {
-    auto div = [scalar](auto elem){return scalar*(1/elem);};
+    auto div = [scalar](auto elem){return elem/scalar;};
     return map(std::forward<LHS>(lhs), std::move(div));
 }
 

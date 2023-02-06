@@ -3,7 +3,6 @@
 
 #include<base_expression.h>
 #include <functional>
-#include <iostream>
 
 namespace expr
 {
@@ -26,9 +25,9 @@ class ElementwiseBinaryOp: public BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_
         constexpr auto extent(std::size_t i) const noexcept {return m_rhs.extent(i);};
 
 #ifdef CLANGBUG
-        constexpr inline auto operator()(auto&&  ... indices) const {return m_op(m_lhs(indices...), m_rhs(indices...));}
+        constexpr auto operator()(auto&&  ... indices) const {return m_op(m_lhs(indices...), m_rhs(indices...));}
 #endif
-        constexpr inline auto operator[](auto&&  ... indices) const {return m_op(m_lhs[indices...], m_rhs[indices...]);}
+        constexpr auto operator[](auto&&  ... indices) const {return m_op(m_lhs[indices...], m_rhs[indices...]);}
 
         constexpr explicit ElementwiseBinaryOp(const ElementwiseBinaryOp&) noexcept = default;
         constexpr explicit ElementwiseBinaryOp(ElementwiseBinaryOp&&) noexcept = default;
