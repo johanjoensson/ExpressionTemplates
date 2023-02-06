@@ -33,10 +33,6 @@ endif()
 
 message( STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} -------------")
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_compile_options(-Ofast -march=native)
-endif()
-
 target_include_directories(ExpressionTemplate INTERFACE 
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
