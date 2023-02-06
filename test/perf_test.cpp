@@ -10,8 +10,8 @@ using Eigen::ArrayXXd;
 int main()
 {
     const size_t n_loop = 200;
-    const double v0 = 0;
-    const size_t ROWS = 5000, COLS = 30000;
+    const double v0 = 3;
+    const size_t ROWS = 500, COLS = 300;
     std::cout << "Matrix dimensions (" << ROWS << ", " << COLS <<")\n";
     std::cout << "m1[2, 3] = 5, m2[2, 4] = 6, m3[2, 5] = 7, all other values are set to " << v0 <<"\n";
     std::cout << "calculating (m1 - m2*(m3 + m1))/m3, " << n_loop << " times\n";
