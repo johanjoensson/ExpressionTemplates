@@ -18,13 +18,14 @@ class ElementwiseUnaryOp: public BaseExpr<ElementwiseUnaryOp<RHS, UNARY_OP>>{
         {}
         ~ElementwiseUnaryOp() noexcept = default;
 
-        constexpr inline auto extents() const noexcept {return m_rhs.extents();};
-        constexpr inline auto extent(std::size_t i) const noexcept {return m_rhs.extent(i);};
+        constexpr auto extents() const noexcept {return m_rhs.extents();};
+        constexpr auto extent(std::size_t i) const noexcept {return m_rhs.extent(i);};
 
 #ifdef CLANGBUG
-        constexpr inline auto operator()(auto&& ... indices) const {return m_op(m_rhs(indices...));}
+        constexpr auto operator()(auto&& ... indices) const {return m_op(m_rhs(indices...));}
 #endif
-        constexpr inline auto operator[](auto&& ... indices) const {return m_op(m_rhs[indices...]);}
+        constexpr auto operator[](auto&& ... indices) const {return m_op(m_rhs[indices...]);}
+
         constexpr explicit ElementwiseUnaryOp(const ElementwiseUnaryOp&) noexcept = default;
         constexpr explicit ElementwiseUnaryOp(ElementwiseUnaryOp&&) noexcept = default;
 
@@ -42,17 +43,6 @@ constexpr inline auto map(Expr&& expr, UnaryOp&& op) noexcept
 {
     return ElementwiseUnaryOp<Expr, UnaryOp>(std::forward<Expr>(expr), std::forward<UnaryOp>(op));
 }
-
-
-template<typename T>
-struct ElementScale
-{
-    constexpr ElementScale() = default;
-    constexpr ElementScale(const T& val) : m_val(val) {}
-    constexpr inline T operator()(const T& a) const noexcept {return m_val*a;}
-    private:
-    const T m_val;
-};
 
 template<expression RHS>
 constexpr inline auto operator*(const typename std::remove_reference_t<RHS>::value_type scalar, RHS&& rhs) noexcept
