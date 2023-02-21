@@ -1,5 +1,5 @@
-#ifndef EXPR_TEMPLATE_REDUCE_H
-#define EXPR_TEMPLATE_REDUCE_H
+#ifndef EXPR_TEMPLATE_SCALAR_REDUCE_OPERATOR_H
+#define EXPR_TEMPLATE_SCALAR_REDUCE_OPERATOR_H
 
 #include <base_expression.h>
 #include <extents_utils.h>
@@ -12,6 +12,10 @@ namespace expr{
 template<expression Expr, typename ReduceOp>
 using reduce_return_type = decltype(std::declval<ReduceOp>()(std::declval<typename std::remove_reference_t<Expr>::value_type>(), std::declval<typename std::remove_reference_t<Expr>::value_type>()));
 
+/// ScalarReduceOp represents expressions where an operator is applied
+/// to each element in an expression, resulting in a single scalar value. The
+/// reduction is not performed until the scalar value is needed (via the
+/// conversion operator).
 template<expression RHS, typename REDUCE_OP>
 class ScalarReduceOp: public BaseExpr<ScalarReduceOp<RHS, REDUCE_OP>>{
     public:
@@ -29,12 +33,6 @@ class ScalarReduceOp: public BaseExpr<ScalarReduceOp<RHS, REDUCE_OP>>{
 
         operator value_type() const noexcept
         {
-                /*
-                auto acc = m_acc;
-                auto reduce_op = [&](auto&& ... indices ){acc = m_op(acc, m_rhs[indices...]);};
-                for_each_index(m_rhs.extents(), reduce_op);
-                return acc;
-                */
                 return exts::reduce_each_index(m_rhs, m_acc, m_rhs.extents(), m_op);
         }
         constexpr explicit ScalarReduceOp(const ScalarReduceOp&) noexcept = default;
@@ -49,6 +47,11 @@ class ScalarReduceOp: public BaseExpr<ScalarReduceOp<RHS, REDUCE_OP>>{
         std::remove_cv_t<value_type> m_acc;
 };
 
+/// The reduce function is the fundamental operation for a
+/// ScalarReduceOp. It takes a function and applies it to each element in the
+/// expression and returns a scalar value. Intermediate values of this process
+/// are stored and passed in the accumulator. An initial value of the accumulator
+/// must be provided, by default the initial accumulator value is 0.
 template<expression Expr, typename REDUCE_OP>
 constexpr inline auto reduce(Expr&& expr, REDUCE_OP&& op, reduce_return_type<Expr, REDUCE_OP>&& acc_init = 0)
 {
@@ -56,6 +59,8 @@ constexpr inline auto reduce(Expr&& expr, REDUCE_OP&& op, reduce_return_type<Exp
         return ScalarReduceOp<Expr, REDUCE_OP>(std::forward<Expr>(expr), std::forward<REDUCE_OP>(op), std::forward<value_type>(acc_init));
 }
 
+/// Returns an expression representing the sum of all elements in the
+/// expression.
 template<expression Expr>
 constexpr inline auto sum(Expr&& expr)
 {
@@ -63,6 +68,8 @@ constexpr inline auto sum(Expr&& expr)
         return reduce(std::forward<Expr>(expr), std::move(f), 0);
 }
 
+/// Returns an expression representing the min of all elements in the
+/// expression.
 template<expression Expr>
 constexpr inline auto min(Expr&& expr)
 {
@@ -71,6 +78,8 @@ constexpr inline auto min(Expr&& expr)
         return reduce(std::forward<Expr>(expr), std::move(f), std::numeric_limits<value_type>::max());
 }
 
+/// Returns an expression representing the max of all elements in the
+/// expression.
 template<expression Expr>
 constexpr inline auto max(Expr&& expr)
 {
@@ -80,4 +89,4 @@ constexpr inline auto max(Expr&& expr)
 }
 }; // expr
 
-#endif // EXPR_TEMPLATE_REDUCE_H
+#endif // EXPR_TEMPLATE_SCALAR_REDUCE_OPERATOR_H

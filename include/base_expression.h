@@ -10,29 +10,40 @@ namespace expr
 template<typename Expr>
 class BaseExpr;
 
-// All Expressions must derive from BaseExpr
+/// Concept for classes that are derived from BaseExpr.
+/// Because expression templates are an example of the "curiously recurring
+/// template" (CRT) pattern, all expressions will derive from the BaseExpr class.
+/// BaseExpr is a templated class, with the derived class as it's template
+/// parameter.
 template<typename Expr>
 concept derived_from_baseexpr = 
 std::derived_from<std::remove_cv_t<std::remove_reference_t<Expr>>,
                   BaseExpr<std::remove_cv_t<std::remove_reference_t<Expr>>>
                  >;
 
-// All Expressions must implement a member function extents()
-// that returns the extents of the underlying data
+/// Concept for classes that have an extents() member function.
+/// Expressions do not store their sizes/dimensions/extents, instead they all
+/// must have an extents() member function. This function should return an extent
+/// as used by mdspan.
 template<typename Expr>
 concept has_extents = requires(Expr e)
 {
         e.extents();
 };
 
-// All expressions must implement the subscript operator 
-// for one or more arguments
+/// Concept for ensuring the presence of a  (possibly multi-)dimensional
+/// subscript operator. All expressions must be subscriptable, since this is how
+/// thay are evaluated.
+///
 template<typename Expr, typename... Indices>
 concept has_subscript_operator = true; /*requires(Expr e, Indices... indices)
 {e[indices...]};
 */
 
-// Combine all requirements on Expressions into one concept, pedagogically named expression
+/// Concept describing a valid expression. This gives the compiler the
+/// ability to, among other things, distinguish scalar values from expressions.
+/// Enabling such features as scalar multiplication, etc.
+///
 template<typename Expr>
 concept expression = derived_from_baseexpr<Expr> && 
                      has_extents<Expr> && 
@@ -40,7 +51,10 @@ concept expression = derived_from_baseexpr<Expr> &&
                       has_subscript_operator<Expr, std::size_t, std::size_t>
                      );
 
-
+/// The BaseExpr template class defines a basic expression base class
+/// that all valid expressions must inherit from. BaseExpr is a template class,
+/// and takes the derived type as it's template parameter (this is the CRT).
+///
 template<typename Expr>
 class BaseExpr
 {
@@ -60,7 +74,6 @@ class BaseExpr
         constexpr explicit BaseExpr(const BaseExpr&) noexcept = default;
         constexpr explicit BaseExpr(BaseExpr&&) noexcept = default;
         ~BaseExpr() noexcept = default;
-        // virtual ~BaseExpr() noexcept = default;
 
         constexpr BaseExpr& operator=(const BaseExpr&) noexcept = default;
         constexpr BaseExpr& operator=(BaseExpr&&) noexcept = default;
