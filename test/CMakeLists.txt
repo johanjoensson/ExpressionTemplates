@@ -2,13 +2,14 @@ set(TEST_FILES
 	main_test.cpp
     matrix_test.cpp
     mdarray_test.cpp
+    reduce_test.cpp
 )
 
 find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+# include_directories(${GTEST_INCLUDE_DIRS})
 
 add_executable(ExpressionTemplate-test ${TEST_FILES})
-target_link_libraries(ExpressionTemplate-test ${GTEST_LIBRARIES} pthread
+target_link_libraries(ExpressionTemplate-test GTest::gtest_main pthread
         ExpressionTemplate)
 GTEST_ADD_TESTS(ExpressionTemplate-test "" ${TEST_FILES})
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
