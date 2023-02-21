@@ -7,11 +7,14 @@
 namespace expr{
 
 template<expression RHS, typename UNARY_OP>
+using unary_return_type = decltype(std::declval<UNARY_OP>()(std::declval<typename std::remove_reference_t<RHS>::value_type>()));
+
+template<expression RHS, typename UNARY_OP>
 class ElementwiseUnaryOp: public BaseExpr<ElementwiseUnaryOp<RHS, UNARY_OP>>{
     public:
         using Base = BaseExpr<ElementwiseUnaryOp<RHS, UNARY_OP>>;
         using RHS_noref = std::remove_reference_t<RHS>;
-        using value_type = decltype(std::declval<UNARY_OP>()(std::declval<typename RHS_noref::value_type>()));
+        using value_type = unary_return_type<RHS, UNARY_OP>;
 
         constexpr explicit ElementwiseUnaryOp(RHS&& rhs, UNARY_OP&& op = UNARY_OP()) noexcept
             : Base(), m_rhs(std::forward<RHS>(rhs)), m_op(std::forward<UNARY_OP>(op))

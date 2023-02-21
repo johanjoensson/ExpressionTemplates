@@ -8,6 +8,7 @@
 #include <base_expression.h>
 #include <elementwise_unary_operators.h>
 #include <elementwise_binary_operators.h>
+#include <scalar_reduce_operators.h>
 
 #endif // EXPR_TEMPLATE_H
 

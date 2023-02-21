@@ -19,11 +19,11 @@ class MDArray<T, stdex::extents<IndexType, Extents...>>: public BaseExpr<MDArray
     public:
         using value_type = T;
         constexpr explicit MDArray(const stdex::extents<IndexType, Extents...>& exts) noexcept 
-            : m_data(ext_size(exts)), m_mdspan(m_data.data(), exts)
+            : m_data(exts::ext_size(exts)), m_mdspan(m_data.data(), exts)
         {}
 
         constexpr explicit MDArray(const stdex::extents<IndexType, Extents...>& exts, T val) noexcept 
-            : m_data(ext_size(exts), val), m_mdspan(m_data.data(), exts)
+            : m_data(exts::ext_size(exts), val), m_mdspan(m_data.data(), exts)
         {}
 
 #ifdef CLANGBUG
@@ -41,14 +41,7 @@ class MDArray<T, stdex::extents<IndexType, Extents...>>: public BaseExpr<MDArray
         constexpr MDArray(Expr&& expr) noexcept
          : MDArray(expr.extents())
         {
-            auto assigner =  [&](auto&&... indices) noexcept{
-#ifdef CLANGBUG
-                (*this)(indices...) = expr(indices...);
-#else
-                (*this)[indices...] = expr[indices...];
-#endif
-            };
-            for_each_index(this->extents(), assigner);
+                exts::assign_each_index(std::forward<Expr>(expr), *this);
         }
 
         inline explicit MDArray() noexcept = default;

@@ -8,12 +8,15 @@ namespace expr
 {
 
 template<expression LHS, expression RHS, typename BINARY_OP>
+using binary_return_type = decltype(std::declval<BINARY_OP>()(std::declval<typename std::remove_reference_t<LHS>::value_type>(), std::declval<typename std::remove_reference_t<RHS>::value_type>()));
+
+template<expression LHS, expression RHS, typename BINARY_OP>
 class ElementwiseBinaryOp: public BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_OP>>{
     public:
         using Base = BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_OP>>;
         using RHS_noref = std::remove_reference_t<RHS>;
         using LHS_noref = std::remove_reference_t<LHS>;
-        using value_type = decltype(std::declval<BINARY_OP>()(std::declval<typename LHS_noref::value_type>(), std::declval<typename RHS_noref::value_type>()));
+        using value_type = binary_return_type<LHS, RHS, BINARY_OP>;
 
         constexpr explicit ElementwiseBinaryOp(LHS&& lhs, RHS&& rhs, BINARY_OP&& op) noexcept
          : Base(), m_lhs(std::forward<LHS>(lhs)), m_rhs(std::forward<RHS>(rhs)), m_op(std::forward<BINARY_OP>(op))
