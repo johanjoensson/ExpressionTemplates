@@ -5,6 +5,7 @@
 namespace stdex = std::experimental;
 
 namespace exts{
+
 template<typename IndexType, size_t... Extents, std::size_t Exti, std::size_t... Exts>
 constexpr inline size_t ext_size(const stdex::extents<IndexType, Extents...>& exts, std::index_sequence<Exti, Exts...>) noexcept
 {
