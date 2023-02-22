@@ -1,7 +1,5 @@
 #include <matrix.h>
-// #include <expr_template.h>
 #include <gtest/gtest.h>
-// #include <type_traits>
 
 template<typename T>
 T v1(const size_t i, const size_t j)
