@@ -10,6 +10,7 @@ template<expression RHS, typename UNARY_OP>
 using unary_return_type = decltype(std::declval<UNARY_OP>()(std::declval<typename std::remove_reference_t<RHS>::value_type>()));
 
 /***************************************************************************//**
+* ElementWiseUnaryOp represents expressions where a unary function is
 * applied to each element in another expression. The evaluation of the
 * function is not performed until the specific element of this expression is
 * required (via the subscript operator).
@@ -49,8 +50,8 @@ class ElementwiseUnaryOp: public BaseExpr<ElementwiseUnaryOp<RHS, UNARY_OP>>{
 /***************************************************************************//**
 * The map function is the fundamental operation for an ElementwiseUnaryOp
 * expression. It takes an expression and an operator and returns an
-* ElementwiseUnaryOp representing the result of applying the operator to each
-* element of the expression.
+* ElementwiseUnaryOp representing the result of applying the operator to
+* each element of the expression.
  ******************************************************************************/
 template<expression Expr, typename UnaryOp>
 constexpr inline auto map(Expr&& expr, UnaryOp&& op) noexcept

@@ -21,7 +21,7 @@ class BaseExpr;
 *
 * Because expression templates are an example of the "curiously recurring
 * template" (CRT) pattern, all expressions will derive from the BaseExpr class.
-* BaseExpr is a templated class, with the derived class as it's template
+* BaseExpr is a templated class, with the derived class as its template
 * parameter.
  ******************************************************************************/
 template<typename Expr>

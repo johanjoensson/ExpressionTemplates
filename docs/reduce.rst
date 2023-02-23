@@ -11,10 +11,12 @@ element and adds it to the accumulator, then when all elements have been added
 to the accumulator, it is returned. In order to reduce an expression, it is
 necessary to supply an initial value for the accumulator (by default the code 
 will try to use the numeric value 0).
-$$
-\texttt{reduce} : A \stackrel{f}{\mapsto} s
-$$
-```c++
-auto f = [](auto accumulator, auto elem){...};
-auto s = expr::reduce(A, f, accumulator_init);
-```
+
+.. math::
+
+   \texttt{reduce} : A \stackrel{f}{\mapsto} s
+
+.. code-block:: c++
+
+   auto f = [](auto accumulator, auto elem){...};
+   auto s = expr::reduce(A, f, accumulator_init);

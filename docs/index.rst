@@ -5,6 +5,12 @@ Expression template
    :maxdepth: 2
    :caption: Contents:
 
+   expressions
+   map
+   zip
+   reduce
+   License
+
 
 Docs
 ====

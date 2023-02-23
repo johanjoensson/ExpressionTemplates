@@ -1,4 +1,5 @@
-```verbatim
+License
+=======
     Expression template - A C++ expression templates library for multidimensional arrays
     Copyright (C) 2023  Johan Jönsson
 
@@ -14,4 +15,3 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-```

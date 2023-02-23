@@ -57,4 +57,5 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 # Breathe Configuration
+breathe_projects = {"Expression template": "../build/docs/doxygen/xml/"}
 breathe_default_project = "Expression template"
