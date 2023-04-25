@@ -9,6 +9,9 @@
 #include <elementwise_unary_operators.h>
 #include <elementwise_binary_operators.h>
 #include <scalar_reduce_operators.h>
+#include <matrix_multiplication_expression.h>
+#include <transpose_expression.h>
+// #include <slice_expression.h> // NOT YET DONE
 
 #endif // EXPR_TEMPLATE_H
 

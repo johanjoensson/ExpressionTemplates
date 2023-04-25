@@ -65,6 +65,50 @@ TEST(Reduce, Max)
     ASSERT_EQ(expr::max(m), 4);
 }
 
+TEST(Reduce, All1)
+{
+    Matrix<int, 2, 2> m;
+    m[0, 0] = 1;
+    m[0, 1] = 2;
+    m[1, 0] = 3;
+    m[1, 1] = 4;
+
+    ASSERT_EQ(expr::all(m, [](auto elem){return elem >= 1; }), true);
+}
+
+TEST(Reduce, All2)
+{
+    Matrix<int, 2, 2> m;
+    m[0, 0] = 1;
+    m[0, 1] = 2;
+    m[1, 0] = 3;
+    m[1, 1] = 4;
+
+    ASSERT_EQ(expr::all(m, [](auto elem){return elem > 3; }), false);
+}
+
+TEST(Reduce, Any1)
+{
+    Matrix<int, 2, 2> m;
+    m[0, 0] = 1;
+    m[0, 1] = 2;
+    m[1, 0] = 3;
+    m[1, 1] = 4;
+
+    ASSERT_EQ(expr::any(m, [](auto elem){return elem >= 3; }), true);
+}
+
+TEST(Reduce, Any2)
+{
+    Matrix<int, 2, 2> m;
+    m[0, 0] = 1;
+    m[0, 1] = 2;
+    m[1, 0] = 3;
+    m[1, 1] = 4;
+
+    ASSERT_EQ(expr::any(m, [](auto elem){return elem >= 5; }), false);
+}
+
 TEST(Reduce, Combined)
 {
     Matrix<int, 2, 2> m;

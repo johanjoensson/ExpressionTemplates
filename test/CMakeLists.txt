@@ -3,6 +3,8 @@ set(TEST_FILES
     matrix_test.cpp
     mdarray_test.cpp
     reduce_test.cpp
+    matmul_test.cpp
+    transpose_test.cpp
 )
 
 find_package(GTest REQUIRED)

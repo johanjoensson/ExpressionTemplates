@@ -1,3 +1,4 @@
+#include "elementwise_binary_operators.h"
 #include <mdarray.h>
 #include <naive.h>
 
@@ -11,11 +12,11 @@ int main()
 {
     const size_t n_loop = 200;
     const double v0 = 3;
-    const size_t ROWS = 500, COLS = 300;
+    const size_t ROWS = 5000, COLS = 3000;
     std::cout << "Matrix dimensions (" << ROWS << ", " << COLS <<")\n";
     std::cout << "m1[2, 3] = 5, m2[2, 4] = 6, m3[2, 5] = 7, all other values are set to " << v0 <<"\n";
     std::cout << "calculating (m1 - m2*(m3 + m1))/m3, " << n_loop << " times\n";
-    constexpr auto calc = [](const auto m1, const auto m2, const auto m3){return (m1 - m2*(m3 + m1))/m3;};
+    constexpr auto calc = [](const auto& m1, const auto& m2, const auto& m3){return (m1 - m2*(m3 + m1))/m3;};
     using Exts = stdex::extents<size_t, std::dynamic_extent, std::dynamic_extent>;
     using Compile_Exts = stdex::extents<size_t, ROWS, COLS>;
     naive::MDArray<double, Exts> nm1{Exts(ROWS, COLS), v0}, nm2{Exts(ROWS, COLS), v0}, nm3{Exts(ROWS, COLS), v0};
@@ -28,6 +29,8 @@ int main()
     nm2[2, 4] = 6;
     nm3[2, 5] = 7;
 #endif
+
+    // naive::matmul(nm1, nm2);
 
     MDArray<double, Exts> em1{Exts(ROWS, COLS), v0}, em2{Exts(ROWS, COLS), v0}, em3{Exts(ROWS, COLS), v0};
 #ifdef CLANG_COMPILER
@@ -131,6 +134,7 @@ int main()
     std::cout << boost::core::demangle( typeid(decltype(cesum_)).name() ) << '\n';
     std::cout << "\nEigen\'s result's type:\n";
     std::cout << boost::core::demangle( typeid(decltype(eigsum_)).name() ) << '\n';
+
 
     return 0;
 }

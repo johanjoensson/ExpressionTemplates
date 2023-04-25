@@ -1,6 +1,5 @@
 #include <mdarray.h>
 #include <gtest/gtest.h>
-// #include <type_traits>
 TEST(MDArray, TestAccess)
 {
     using D2 = stdex::dextents<std::size_t, 2>;
