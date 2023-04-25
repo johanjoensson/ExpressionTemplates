@@ -97,6 +97,20 @@ constexpr inline auto max(Expr&& expr)
         auto f = [](auto acc, auto val){return std::max(acc, val);};
         return reduce(std::forward<Expr>(expr), std::move(f), std::numeric_limits<value_type>::min());
 }
+
+template<expression Expr, typename P>
+constexpr inline auto all(Expr&& expr, P&& predicate)
+{
+        auto f = [&](auto acc, auto val){return acc && predicate(val);};
+        return reduce(std::forward<Expr>(expr), std::move(f), true);
+}
+
+template<expression Expr, typename P>
+constexpr inline auto any(Expr&& expr, P&& predicate)
+{
+        auto f = [&](auto acc, auto val){return acc || predicate(val);};
+        return reduce(std::forward<Expr>(expr), std::move(f), false);
+}
 }; // expr
 
 #endif // EXPR_TEMPLATE_SCALAR_REDUCE_OPERATOR_H

@@ -59,8 +59,20 @@ class ElementwiseBinaryOp: public BaseExpr<ElementwiseBinaryOp<LHS, RHS, BINARY_
 * operator to each pair of matching elements element of the expressions.
  ******************************************************************************/
 template<expression LHS, expression RHS, typename BinaryOp>
-constexpr inline auto zip(LHS&& lhs, RHS&& rhs, BinaryOp&& op) noexcept
+constexpr inline auto zip(LHS&& lhs, RHS&& rhs, BinaryOp&& op)
 {
+    if (lhs.extents().rank() != rhs.extents().rank()){
+            throw std::runtime_error("Rank of left hand side expression does not match rank of right hand side expression!\n" + std::to_string(lhs.extents().rank()) + " != " + std::to_string(rhs.extents().rank()));
+    }
+    for (size_t i = 0; i < lhs.extents().rank(); i++){
+            if (lhs.extent(i) != rhs.extent(i)){
+                    throw std::runtime_error("Dimensions do not match!\nDimension " + std::to_string(i) + ": " + std::to_string(lhs.extent(i)) + " != " + std::to_string(rhs.extent(i)));
+            }
+    }
+
+    if(lhs.extent(lhs.extents().rank() - 1) != rhs.extent(lhs.extents().rank() - 2)){
+            throw std::runtime_error("incompatible dimensions for matrix multiplication!\n" + std::to_string(lhs.extent(lhs.extents().rank() - 1)) + " != " + std::to_string(rhs.extent(rhs.extents().rank() - 2)));
+    }
     return ElementwiseBinaryOp<LHS, RHS, BinaryOp>(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::forward<BinaryOp>(op));
 }
 
@@ -69,7 +81,7 @@ constexpr inline auto zip(LHS&& lhs, RHS&& rhs, BinaryOp&& op) noexcept
 * representing the addition of matching elements in two expressions.
  ******************************************************************************/
 template<expression LHS, expression RHS>
-constexpr inline auto operator+(LHS&& lhs, RHS&& rhs) noexcept
+constexpr inline auto operator+(LHS&& lhs, RHS&& rhs)
 {
      return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::plus<>());
 }
@@ -79,7 +91,7 @@ constexpr inline auto operator+(LHS&& lhs, RHS&& rhs) noexcept
 * representing the subtraction of matching elements in two expressions.
  ******************************************************************************/
 template<expression LHS, expression RHS>
-constexpr inline auto operator-(LHS&& lhs, RHS&& rhs) noexcept
+constexpr inline auto operator-(LHS&& lhs, RHS&& rhs)
 {
     return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::minus<>());
 }
@@ -90,7 +102,7 @@ constexpr inline auto operator-(LHS&& lhs, RHS&& rhs) noexcept
 * two expressions.
  ******************************************************************************/
 template<expression LHS, expression RHS>
-constexpr inline auto operator*(LHS&& lhs, RHS&& rhs) noexcept
+constexpr inline auto operator*(LHS&& lhs, RHS&& rhs)
 {
     return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::multiplies<>());
 }
@@ -101,7 +113,7 @@ constexpr inline auto operator*(LHS&& lhs, RHS&& rhs) noexcept
 * expressions.
  ******************************************************************************/
 template<expression LHS, expression RHS>
-constexpr inline auto operator/(LHS&& lhs, RHS&& rhs) noexcept
+constexpr inline auto operator/(LHS&& lhs, RHS&& rhs)
 {
     return zip(std::forward<LHS>(lhs), std::forward<RHS>(rhs), std::divides<>());
 }
