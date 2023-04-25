@@ -43,13 +43,10 @@ class Matrix : public BaseExpr<Matrix<T, ROWS, COLS>>{
         static constexpr std::size_t rows = ROWS;
         static constexpr std::size_t cols =  COLS;
 
-        constexpr auto extents() const noexcept {return stdex::extents<size_t, 2, 2>();}
+        constexpr auto extents() const noexcept {return stdex::extents<size_t, ROWS, COLS>();}
         constexpr std::size_t extent(std::size_t i) const noexcept 
         {
-                if (i < 2){
-                        return 2;
-                }
-                return static_cast<std::size_t>(-1);
+                return extents().extent(i);
         }
 
 #ifdef CLANGDEBUG
