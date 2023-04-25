@@ -98,20 +98,36 @@ concept expression = derived_from_baseexpr<Expr> &&
 * that all valid expressions must inherit from. BaseExpr is a template class,
 * and takes the derived type as it's template parameter (this is the CRT).
  ******************************************************************************/
+#ifndef DEDUCE_THIS
 template<typename Expr>
+#endif
 class BaseExpr
 {
     public:
 
+#ifndef DEDUCE_THIS
         const Expr& self() const noexcept {return static_cast<const Expr&>(*this);}
         Expr& self() noexcept {return static_cast<Expr&>(*this);}
+#endif
 
+#ifndef DEDUCE_THIS
         constexpr auto extents() const noexcept {return self().extents();}
         constexpr auto extent(std::size_t i) const noexcept {return self().extent(i);}
+#else
+        constexpr auto extents(this auto& self) const noexcept {return self.extents();}
+        constexpr auto extent(this auto& self, std::size_t i) const noexcept {return self.extent(i);}
+#endif
+#ifndef DEDUCE_THIS
 #ifdef CLANGBUG
         constexpr auto operator()(auto&&... indices) const {return self()(indices...);}
 #endif
         constexpr auto operator[](auto&&... indices) const {return self()[indices...];}
+#else
+#ifdef CLANGBUG
+        constexpr auto operator()(this auto& self, auto&&... indices) const {return self(indices...);}
+#endif
+        constexpr auto operator[](this auto& self, auto&&... indices) const {return self[indices...];}
+#endif
     protected:
         constexpr explicit BaseExpr() noexcept = default;
         constexpr explicit BaseExpr(const BaseExpr&) noexcept = default;
